@@ -1,4 +1,4 @@
-package org.atipera.model;
+package org.repository_getter.model;
 
 import lombok.Builder;
 import lombok.Data;

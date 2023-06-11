@@ -1,10 +1,10 @@
-package org.atipera.model;
+package org.repository_getter.model;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 
-@Data
+@AllArgsConstructor
 public class Repository {
     private String name;
     private String login;
