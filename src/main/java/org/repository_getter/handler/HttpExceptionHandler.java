@@ -11,10 +11,9 @@ public class HttpExceptionHandler {
 
     @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
     public final ResponseEntity<?> handleHttpMediaTypeNotAcceptableException(final HttpMediaTypeNotAcceptableException e) {
-        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).contentType(MediaType.APPLICATION_JSON)
-                .body(CustomError.builder()
-                        .status(406)
-                        .message(e.getMessage())
-                        .build());
+        return ResponseEntity
+                .status(HttpStatus.NOT_ACCEPTABLE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new CustomError(HttpStatus.NOT_ACCEPTABLE.value(), e.getMessage()));
     }
 }

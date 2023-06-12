@@ -23,10 +23,7 @@ public class GithubController extends HttpExceptionHandler {
         try {
             return new ResponseEntity<>(repositoryService.getRepositories(username), HttpStatus.OK);
         } catch (HttpClientErrorException e) {
-            return new ResponseEntity<>(CustomError.builder()
-                    .status(e.getRawStatusCode())
-                    .message(e.getMessage())
-                    .build(), e.getStatusCode());
+            return new ResponseEntity<>(new CustomError(e.getRawStatusCode(), e.getMessage()), e.getStatusCode());
         }
     }
 }

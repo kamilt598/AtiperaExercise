@@ -1,4 +1,4 @@
-package org.repository_getter.service.impl;
+package org.repository_getter.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.repository_getter.model.Branch;
 import org.repository_getter.model.Repository;
-import org.repository_getter.service.BranchService;
-import org.repository_getter.service.RepositoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -27,6 +25,7 @@ import java.util.Map;
 public class RepositoryServiceImpl implements RepositoryService {
 
     private final BranchService branchService;
+    private final RestTemplate restTemplate;
     @Value("${github.api.base.url}")
     private String githubUrl;
     @Value("${github.api.repositories}")
@@ -36,16 +35,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 
     @Override
     public List<Repository> getRepositories(final String username) {
-        final RestTemplate restTemplate = new RestTemplate();
         final ObjectMapper mapper = new ObjectMapper();
-        final URI url = UriComponentsBuilder
-                .fromUriString(githubUrl)
-                .path(repositoriesPath)
-                .uriVariables(Map.of(repositoriesPathVariable, username))
-                .build()
-                .toUri();
+        final URI uri = getUri(username);
         try {
-            final ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            final ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
             final JsonNode root = mapper.readTree(response.getBody());
             final List<Repository> repositories = new ArrayList<>();
             for (int i = 0; i < root.size(); i++) {
@@ -57,9 +50,18 @@ public class RepositoryServiceImpl implements RepositoryService {
                 }
             }
             return repositories;
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.error("Cannot get repositories for username: {}", username, e);
             return Collections.emptyList();
         }
+    }
+
+    private URI getUri(final String username) {
+        return UriComponentsBuilder
+                .fromUriString(githubUrl)
+                .path(repositoriesPath)
+                .uriVariables(Map.of(repositoriesPathVariable, username))
+                .build()
+                .toUri();
     }
 }

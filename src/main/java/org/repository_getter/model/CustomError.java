@@ -1,10 +1,10 @@
 package org.repository_getter.model;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Data
-@Builder
+@AllArgsConstructor
+@Getter
 public class CustomError {
     private int status;
     private String message;

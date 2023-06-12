@@ -1,11 +1,11 @@
-package org.repository_getter.service.impl;
+package org.repository_getter.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.repository_getter.model.Branch;
-import org.repository_getter.service.BranchService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -20,8 +20,10 @@ import java.util.Map;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class BranchServiceImpl implements BranchService {
 
+    private final RestTemplate restTemplate;
     @Value("${github.api.base.url}")
     private String githubUrl;
     @Value("${github.api.branches}")
@@ -33,15 +35,9 @@ public class BranchServiceImpl implements BranchService {
 
     @Override
     public List<Branch> getBranches(final String username, final String repositoryName) {
-        final RestTemplate restTemplate = new RestTemplate();
         final ObjectMapper mapper = new ObjectMapper();
-        final URI url = UriComponentsBuilder
-                .fromUriString(githubUrl)
-                .path(branchesUrl)
-                .uriVariables(Map.of(usernameVariable, username, repositoryNameVariable, repositoryName))
-                .build()
-                .toUri();
-        final ResponseEntity<String> branchResponse = restTemplate.getForEntity(url, String.class);
+        final URI uri = getUri(username, repositoryName);
+        final ResponseEntity<String> branchResponse = restTemplate.getForEntity(uri, String.class);
         final List<Branch> branchList = new ArrayList<>();
         try {
             final JsonNode branchRoot = mapper.readTree(branchResponse.getBody());
@@ -51,9 +47,18 @@ public class BranchServiceImpl implements BranchService {
                 branchList.add(new Branch(branchName, sha));
             }
             return branchList;
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.error("Cannot get branches for username: {}, repositoryName: {}", username, repositoryName, e);
             return Collections.emptyList();
         }
+    }
+
+    public URI getUri(final String username, final String repositoryName) {
+        return UriComponentsBuilder
+                .fromUriString(githubUrl)
+                .path(branchesUrl)
+                .uriVariables(Map.of(usernameVariable, username, repositoryNameVariable, repositoryName))
+                .build()
+                .toUri();
     }
 }
