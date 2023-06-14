@@ -1,6 +1,5 @@
 package org.repository_getter.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +52,7 @@ public class BranchServiceImpl implements BranchService {
         }
     }
 
-    public URI getUri(final String username, final String repositoryName) {
+    private URI getUri(final String username, final String repositoryName) {
         return UriComponentsBuilder
                 .fromUriString(githubUrl)
                 .path(branchesUrl)

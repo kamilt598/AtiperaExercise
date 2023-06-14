@@ -19,7 +19,7 @@ public class GithubController extends HttpExceptionHandler {
     private final RepositoryService repositoryService;
 
     @GetMapping(value = "/{username}")
-    private @ResponseBody ResponseEntity<?> getRepositories(@PathVariable final String username) {
+    public @ResponseBody ResponseEntity<?> getRepositories(@PathVariable final String username) {
         try {
             return new ResponseEntity<>(repositoryService.getRepositories(username), HttpStatus.OK);
         } catch (HttpClientErrorException e) {

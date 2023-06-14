@@ -3,11 +3,15 @@ package org.repository_getter.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.repository_getter.TestConfig;
+import org.repository_getter.model.Branch;
 import org.repository_getter.model.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,17 +25,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @SpringBootTest(classes = TestConfig.class)
+@ExtendWith(MockitoExtension.class)
 class RepositoryServiceTest {
 
     @Autowired
     private RepositoryService repositoryService;
-    @Autowired
-    private BranchServiceImpl branchService;
+    @MockBean
+    private BranchService branchService;
     @Autowired
     private RestTemplate restTemplate;
     private MockRestServiceServer mockServer;
@@ -71,11 +78,8 @@ class RepositoryServiceTest {
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(expectedJson));
-        mockServer.expect(ExpectedCount.once(), requestTo(branchService.getUri(username, "repository1")))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BranchServiceTest.EXPECTED_JSON));
+        when(branchService.getBranches(anyString(), anyString()))
+                .thenReturn(List.of(new Branch("master", "1111111111111111111111111111111111111111")));
         final List<Repository> repositories = repositoryService.getRepositories(username);
 
         Assertions.assertEquals("repository1", repositories.get(0).getName());
